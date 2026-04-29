@@ -118,4 +118,6 @@ src/.vs/config/applicationhost.config
 .idea/
 
 bin/
+/bin
 obj/
+/obj
