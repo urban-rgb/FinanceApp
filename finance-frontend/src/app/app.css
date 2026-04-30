@@ -59,6 +59,7 @@ th {
   margin-right: 5px;
 }
 
+.btn-cancel,
 .btn-delete {
   background: #dc3545;
   color: white;
@@ -69,4 +70,40 @@ th {
 
 button:hover {
   opacity: 0.8;
+}
+
+.form-section {
+  background: #e9ecef;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.form-section form {
+  display: flex;
+  gap: 10px;
+}
+
+.inline-form {
+  display: flex;
+  gap: 5px;
+}
+
+input, select {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.btn-save {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
 }

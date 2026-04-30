@@ -1,5 +1,4 @@
 <div class="container">
-  <!-- Don't show page if *ngIf == null: -->
   <header *ngIf="user()">
     <h1>Finance Tracker</h1>
     <div class="user-card">
@@ -10,8 +9,25 @@
   </header>
 
   <section class="actions">
-    <button class="btn-add">Add Transaction</button>
+    <button class="btn-add" (click)="showAddForm.set(!showAddForm())">
+      {{ showAddForm() ? 'Close' : 'Add Transaction' }}
+    </button>
   </section>
+
+  @if (showAddForm()) {
+    <section class="form-section">
+      <h3>New Transaction</h3>
+      <form [formGroup]="addForm" (ngSubmit)="onAddSubmit()">
+        <input type="text" formControlName="name" placeholder="Name">
+        <input type="number" formControlName="amount" placeholder="Amount">
+        <select formControlName="type">
+          <option value="Income">Income</option>
+          <option value="Expense">Expense</option>
+        </select>
+        <button type="submit" [disabled]="addForm.invalid">Create</button>
+      </form>
+    </section>
+  }
 
   <section class="transactions">
     <table>
@@ -27,16 +43,32 @@
       <tbody>
         @for (t of transactions(); track t.id) {
           <tr>
-            <td>{{ t.name }}</td>
-            <td [class.income]="t.type === 'Income'" [class.expense]="t.type === 'Expense'">
-              {{ t.amount | currency }}
-            </td>
-            <td>{{ t.type }}</td>
-            <td>{{ t.createdAt | date:'short' }}</td>
-            <td>
-              <button class="btn-edit">Edit</button>
-              <button class="btn-delete" (click)="onDelete(t.id)">Delete</button>
-            </td>
+            @if (editingTransactionId() === t.id) {
+              <td><input type="text" [formControl]="editForm.controls.name" class="table-input"></td>
+              <td><input type="number" [formControl]="editForm.controls.amount" class="table-input"></td>
+              <td>
+                <select [formControl]="editForm.controls.type" class="table-input">
+                  <option value="Income">Income</option>
+                  <option value="Expense">Expense</option>
+                </select>
+              </td>
+              <td>{{ t.createdAt | date:'short' }}</td>
+              <td>
+                <button class="btn-save" (click)="onEditSubmit()">Save</button>
+                <button class="btn-cancel" (click)="editingTransactionId.set(null)">Cancel</button>
+              </td>
+            } @else {
+              <td>{{ t.name }}</td>
+              <td [class.income]="t.type === 'Income'" [class.expense]="t.type === 'Expense'">
+                {{ t.amount | currency }}
+              </td>
+              <td>{{ t.type }}</td>
+              <td>{{ t.createdAt | date:'short' }}</td>
+              <td>
+                <button class="btn-edit" (click)="onEditClick(t)">Edit</button>
+                <button class="btn-delete" (click)="onDelete(t.id)">Delete</button>
+              </td>
+            }
           </tr>
         }
       </tbody>
