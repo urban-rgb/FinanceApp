@@ -1,0 +1,45 @@
+<div class="container">
+  <!-- Don't show page if *ngIf == null: -->
+  <header *ngIf="user()">
+    <h1>Finance Tracker</h1>
+    <div class="user-card">
+      <p><strong>User:</strong> {{ user()?.name }}</p>
+      <p><strong>ID:</strong> {{ user()?.id }}</p>
+      <p class="balance"><strong>Balance:</strong> {{ user()?.balance | currency }}</p>
+    </div>
+  </header>
+
+  <section class="actions">
+    <button class="btn-add">Add Transaction</button>
+  </section>
+
+  <section class="transactions">
+    <table>
+      <thead>
+      <tr>
+        <th>Name</th>
+        <th>Amount</th>
+        <th>Type</th>
+        <th>Date</th>
+        <th>Actions</th>
+      </tr>
+      </thead>
+      <tbody>
+        @for (t of transactions(); track t.id) {
+          <tr>
+            <td>{{ t.name }}</td>
+            <td [class.income]="t.type === 'Income'" [class.expense]="t.type === 'Expense'">
+              {{ t.amount | currency }}
+            </td>
+            <td>{{ t.type }}</td>
+            <td>{{ t.createdAt | date:'short' }}</td>
+            <td>
+              <button class="btn-edit">Edit</button>
+              <button class="btn-delete" (click)="onDelete(t.id)">Delete</button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </section>
+</div>
