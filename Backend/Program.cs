@@ -32,6 +32,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
+builder.Services.Configure<FinanceSettings>(
+    builder.Configuration.GetSection(FinanceSettings.SectionName));
 
 var app = builder.Build();
 

@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options; 
 using FinanceApp.Data;
 using FinanceApp.DTOs;
 using FinanceApp.Models;
@@ -8,14 +9,21 @@ namespace FinanceApp.Services;
 public class TransactionService : ITransactionService
 {
     private readonly AppDbContext _context;
+    private readonly FinanceSettings _settings;
 
-    public TransactionService(AppDbContext context)
+    public TransactionService(AppDbContext context,  IOptions<FinanceSettings> settings)
     {
         _context = context;
+        _settings = settings.Value;
     }
 
     public async Task<TransactionResponseDto> CreateTransactionAsync(TransactionCreateDto dto)
     {
+        if (dto.Amount > _settings.MaxTransactionAmount)
+        {
+            throw new InvalidOperationException($"Transaction amount exceeds the allowed limit of {_settings.MaxTransactionAmount}");
+        }
+        
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == dto.UserId);
         if (user == null)
         {
@@ -23,15 +31,10 @@ public class TransactionService : ITransactionService
         }
 
         if (dto.Type == TransactionType.Income)
-        {
             user.Balance += dto.Amount;
-        }
         else
-        {
             user.Balance -= dto.Amount;
-        }
         
-        // todo add throw exceptions everywhere
         var transaction = new Transaction
         {
             Id = Guid.NewGuid(),
@@ -77,7 +80,7 @@ public class TransactionService : ITransactionService
             .FirstOrDefaultAsync(t => t.Id == id);
 
         if (transaction == null) return null;
-
+        
         return new TransactionResponseDto
         {
             Id = transaction.Id,
@@ -94,20 +97,16 @@ public class TransactionService : ITransactionService
             .Include(t => t.User)
             .FirstOrDefaultAsync(t => t.Id == id);
 
-        if (transaction == null) return false;
+        if (transaction == null)
+            return false;
 
         if (transaction.Type == TransactionType.Income)
-        {
             transaction.User.Balance -= transaction.Amount;
-        }
         else
-        {
             transaction.User.Balance += transaction.Amount;
-        }
 
         _context.Transactions.Remove(transaction);
         await _context.SaveChangesAsync();
-
         return true;
     }
     
@@ -119,27 +118,20 @@ public class TransactionService : ITransactionService
 
         if (transaction == null) return null;
 
-        if (transaction.Type == TransactionType.Income)
+        if (dto.Amount > _settings.MaxTransactionAmount)
         {
-            transaction.User.Balance -= transaction.Amount;
+            throw new InvalidOperationException($"New amount exceeds the limit of {_settings.MaxTransactionAmount}");
         }
-        else
-        {
-            transaction.User.Balance += transaction.Amount;
-        }
+
+        if (transaction.Type == TransactionType.Income) transaction.User.Balance -= transaction.Amount;
+        else transaction.User.Balance += transaction.Amount;
 
         transaction.Name = dto.Name;
         transaction.Amount = dto.Amount;
         transaction.Type = dto.Type;
 
-        if (transaction.Type == TransactionType.Income)
-        {
-            transaction.User.Balance += transaction.Amount;
-        }
-        else
-        {
-            transaction.User.Balance -= transaction.Amount;
-        }
+        if (transaction.Type == TransactionType.Income) transaction.User.Balance += transaction.Amount;
+        else transaction.User.Balance -= transaction.Amount;
 
         await _context.SaveChangesAsync();
 
