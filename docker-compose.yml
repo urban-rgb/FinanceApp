@@ -1,0 +1,28 @@
+version: '3.8'
+services:
+  finance-db:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=YourStrongPassword123!
+    ports:
+      - "1433:1433"
+
+  finance-api:
+    build:
+      context: ./Backend
+    ports:
+      - "5268:8080"
+    depends_on:
+      - finance-db
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=finance-db;Database=MoneyTrackerDb;User Id=sa;Password=YourStrongPassword123!;TrustServerCertificate=True
+      - ASPNETCORE_ENVIRONMENT=Development
+
+  finance-ui:
+    build:
+      context: ./finance-frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - finance-api
