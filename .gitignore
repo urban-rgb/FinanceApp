@@ -183,3 +183,7 @@ baseline.json
 
 # pnpm store
 .pnpm-store
+
+# Expo-generated agent instructions
+CLAUDE.md
+Frontend/AGENTS.md
